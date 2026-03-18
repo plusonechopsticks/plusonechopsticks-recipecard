@@ -391,7 +391,7 @@ Return ONLY a JSON object with these exact fields, no other text:
 
   const handleAddDishToDinner = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDish.englishName || !newDish.heroImage || !selectedDinnerId) return;
+    if (!newDish.englishName || !selectedDinnerId) return;
     const dishToAdd: Dish = {
       ...newDish as Dish,
       id: Date.now().toString(),
