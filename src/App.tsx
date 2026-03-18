@@ -59,7 +59,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
         </div>
       )}
 
-      <div className={`relative ${isPrint ? 'h-[45%]' : 'h-1/2'} overflow-hidden bg-gray-100`}>
+      <div className={`relative ${isPrint ? 'h-[45%]' : 'h-[55%]'} overflow-hidden bg-gray-100`}>
         {dish.heroImage && (
           <img
             src={dish.heroImage}
@@ -209,8 +209,8 @@ Return ONLY a JSON object with these exact fields, no other text:
   "pinyin": "Romanized pronunciation with tone marks",
   "type": "veggie" or "meat" or "seafood",
   "ingredients": ["ingredient 1", "ingredient 2", "ingredient 3", "ingredient 4"],
-  "story": "2-3 sentence description of the dish and its cultural significance",
-  "culturalNote": "One sentence about cultural context or tradition"
+  "story": "Exactly 2 sentences maximum, under 40 words total",
+  "culturalNote": "Exactly 1 sentence, under 20 words"
 }`
           }]
         })
