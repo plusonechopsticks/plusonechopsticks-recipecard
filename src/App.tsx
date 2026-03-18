@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import QRCode from 'qrcode';
 import { motion, AnimatePresence } from 'motion/react';
-import { Printer, LayoutGrid, ChevronRight, MapPin, Quote, Info, Plus, Upload, X, Image as ImageIcon, Calendar, User, Search, ChevronLeft, Pencil, FileDown } from 'lucide-react';
+import { Printer, LayoutGrid, ChevronRight, MapPin, Quote, Info, Plus, Upload, X, Image as ImageIcon, Calendar, User, Search, ChevronLeft, Pencil, FileDown, Sparkles, Loader2 } from 'lucide-react';
 import { DISHES, Dish, Dinner } from './constants';
 
 const Logo = () => (
@@ -58,20 +59,22 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
         </div>
       )}
 
-      <div className={`relative ${isPrint ? 'h-[45%]' : 'h-1/2'} overflow-hidden`}>
-        <img 
-          src={dish.heroImage} 
-          alt={dish.englishName}
-          className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-          referrerPolicy="no-referrer"
-        />
+      <div className={`relative ${isPrint ? 'h-[45%]' : 'h-1/2'} overflow-hidden bg-gray-100`}>
+        {dish.heroImage && (
+          <img
+            src={dish.heroImage}
+            alt={dish.englishName}
+            className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+            referrerPolicy="no-referrer"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
       </div>
 
       <div className={`flex-1 ${isPrint ? 'p-4' : 'p-8'} flex flex-col`}>
         <div className={isPrint ? 'mb-4' : 'mb-6'}>
           <div className="flex items-center justify-between mb-1">
-            <h2 className={`font-serif ${isPrint ? 'text-2xl' : 'text-3xl md:text-4xl'} font-light tracking-tight`}>
+            <h2 className={`font-serif ${isPrint ? 'text-3xl' : 'text-3xl md:text-4xl'} font-light tracking-tight`}>
               {dish.englishName}
             </h2>
             <div className="flex items-center gap-2">
@@ -82,19 +85,19 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
             </div>
           </div>
           <div className="flex items-baseline gap-3">
-            <span className={`font-chinese ${isPrint ? 'text-xl' : 'text-2xl'} text-[#c4a484]`}>{dish.chineseName}</span>
-            <span className="font-serif italic text-sm text-gray-400">{dish.pinyin}</span>
+            <span className={`font-chinese ${isPrint ? 'text-2xl' : 'text-2xl'} text-[#c4a484]`}>{dish.chineseName}</span>
+            <span className="font-serif italic text-base text-gray-700">{dish.pinyin}</span>
           </div>
         </div>
 
         <div className={`grid ${isPrint ? 'grid-cols-2 gap-3' : 'grid-cols-2 gap-8'} flex-1`}>
           <div className={isPrint ? 'space-y-2' : 'space-y-4'}>
             <div className="flex items-center gap-2 border-b border-gray-100 pb-1">
-              <Info size={12} className="text-gray-400" />
-              <h3 className="font-sans text-[9px] uppercase tracking-widest font-bold text-gray-500">Key Ingredients</h3>
+              <Info size={12} className="text-gray-600" />
+              <h3 className="font-sans text-[11px] uppercase tracking-widest font-bold text-gray-700">Key Ingredients</h3>
             </div>
             {isPrint ? (
-              <p className="font-serif text-sm text-gray-600 leading-relaxed italic">
+              <p className="font-serif text-base text-gray-800 leading-relaxed italic">
                 {dish.ingredients.join(', ')}
               </p>
             ) : (
@@ -111,16 +114,16 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
 
           <div className={isPrint ? 'space-y-3' : 'space-y-4'}>
             <div className="flex items-center gap-2 border-b border-gray-100 pb-1">
-              <Quote size={12} className="text-gray-400" />
-              <h3 className="font-sans text-[9px] uppercase tracking-widest font-bold text-gray-500">The Story</h3>
+              <Quote size={12} className="text-gray-600" />
+              <h3 className="font-sans text-[11px] uppercase tracking-widest font-bold text-gray-700">The Story</h3>
             </div>
-            <p className={`font-serif ${isPrint ? 'text-xs' : 'text-sm'} leading-relaxed text-gray-600 italic`}>
+            <p className={`font-serif ${isPrint ? 'text-base' : 'text-sm'} leading-relaxed text-gray-800 italic`}>
               "{dish.story}"
             </p>
             {!isPrint && (
               <div className="pt-2">
                 <p className="font-sans text-[9px] uppercase tracking-widest font-bold text-[#c4a484] mb-1">Cultural Note</p>
-                <p className="font-serif text-xs text-gray-500 leading-snug">
+                <p className="font-serif text-sm text-gray-500 leading-snug">
                   {dish.culturalNote}
                 </p>
               </div>
@@ -129,25 +132,16 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
         </div>
 
         <div className={`mt-auto ${isPrint ? 'pt-3' : 'pt-6'} flex justify-between items-end border-t border-gray-100/50`}>
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-3 text-gray-400">
-              <div className="flex items-center gap-1.5">
-                <span className="font-serif text-[10px] text-gray-600 italic">{dinner.hostName}</span>
-                <div className="w-1 h-1 rounded-full bg-gray-300" />
-                <span className="font-serif text-[10px]">{dinner.date}</span>
-              </div>
-              <div className="h-2 w-[0.5px] bg-gray-200" />
-              <div className="flex items-center gap-1.5">
-                <MapPin size={8} />
-                <span className="font-sans text-[8px] uppercase tracking-widest">{dinner.district}, {dinner.city}</span>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-end opacity-40 grayscale">
+          <div className="flex items-center gap-3 text-gray-600">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-serif font-bold text-[#c4a484]">+1</span>
-              <div className="h-2.5 w-[0.5px] bg-gray-400" />
-              <span className="text-[7px] font-serif uppercase tracking-widest">Chopsticks</span>
+              <span className="font-serif text-[12px] text-gray-800 italic">{dinner.hostName}</span>
+              <div className="w-1 h-1 rounded-full bg-gray-300" />
+              <span className="font-serif text-[12px] text-gray-700">{dinner.date}</span>
+            </div>
+            <div className="h-2 w-[0.5px] bg-gray-200" />
+            <div className="flex items-center gap-1.5">
+              <MapPin size={8} />
+              <span className="font-sans text-[10px] uppercase tracking-widest">{dinner.district}, {dinner.city}</span>
             </div>
           </div>
         </div>
@@ -178,10 +172,72 @@ export default function App() {
   const [editingDishId, setEditingDishId] = useState<string | null>(null);
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
   const cardGridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    QRCode.toDataURL('https://plus1chopsticks.com', { width: 80, margin: 1 })
+      .then(setQrCodeUrl)
+      .catch(() => {});
+  }, []);
+
+  const handleMagicGenerate = async () => {
+    const chineseName = newDish.chineseName?.trim();
+    if (!chineseName) return;
+    setIsGenerating(true);
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': import.meta.env.VITE_CLAUDE_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{
+            role: 'user',
+            content: `You are a Chinese food expert specializing in Shanghainese cuisine.
+Given this Chinese dish name: ${chineseName}
+
+Return ONLY a JSON object with these exact fields, no other text:
+{
+  "englishName": "English dish name",
+  "pinyin": "Romanized pronunciation with tone marks",
+  "type": "veggie" or "meat" or "seafood",
+  "ingredients": ["ingredient 1", "ingredient 2", "ingredient 3", "ingredient 4"],
+  "story": "2-3 sentence description of the dish and its cultural significance",
+  "culturalNote": "One sentence about cultural context or tradition"
+}`
+          }]
+        })
+      });
+      const data = await response.json();
+      const text = data.content[0].text;
+      const clean = text.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+      setNewDish(prev => ({
+        ...prev,
+        englishName: parsed.englishName ?? prev.englishName,
+        pinyin: parsed.pinyin ?? prev.pinyin,
+        type: parsed.type ?? prev.type,
+        ingredients: parsed.ingredients?.join(', ') ?? prev.ingredients,
+        story: parsed.story ?? prev.story,
+        culturalNote: parsed.culturalNote ?? prev.culturalNote,
+      }));
+    } catch (e) {
+      console.error('Claude API error', e);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleDownloadPdf = async () => {
     if (!cardGridRef.current) return;
+    if (!qrCodeUrl) return;
     setIsDownloadingPdf(true);
     try {
       const [{ default: jsPDF }, { toCanvas }] = await Promise.all([
@@ -210,6 +266,26 @@ export default function App() {
       const rowStride = (cardHeight + gapPx) * PIXEL_RATIO; // top-of-row to top-of-next-row
       const cardSliceH = cardHeight * PIXEL_RATIO;           // card pixels only, no trailing gap
 
+      // Build chopsticks logo as a PNG data URL from the SVG
+      const svgStr = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 2L5 22" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+        <path d="M12 2L10 22" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+        <path d="M19 7V13" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+        <path d="M16 10H22" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+      </svg>`;
+      const svgDataUrl = 'data:image/svg+xml;base64,' + btoa(svgStr);
+      const logoDataUrl = await new Promise<string>((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = 48; c.height = 48;
+          c.getContext('2d')!.drawImage(img, 0, 0, 48, 48);
+          resolve(c.toDataURL('image/png'));
+        };
+        img.onerror = () => resolve('');
+        img.src = svgDataUrl;
+      });
+
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       const PAGE_W_MM = 297, PAGE_H_MM = 210;
 
@@ -224,12 +300,40 @@ export default function App() {
         slice.getContext('2d')!.drawImage(fullCanvas, 0, sliceY, canvasW, sliceH, 0, 0, canvasW, sliceH);
 
         // Preserve aspect ratio, centre vertically on A4
-        const renderedW = PAGE_W_MM;
         const renderedH = sliceH * (PAGE_W_MM / canvasW);
-        const yOffset = (PAGE_H_MM - renderedH) / 2;
 
         if (i > 0) pdf.addPage();
-        pdf.addImage(slice.toDataURL('image/jpeg', 0.92), 'JPEG', 0, yOffset, renderedW, renderedH);
+
+        const HEADER_H = 15, FOOTER_H = 12;
+        const cardZoneH = PAGE_H_MM - HEADER_H - FOOTER_H; // 183mm
+        const cardH = renderedH <= cardZoneH ? renderedH : cardZoneH;
+        const cardW = cardH === cardZoneH ? cardZoneH * (PAGE_W_MM / renderedH) : PAGE_W_MM;
+        const cardX = (PAGE_W_MM - cardW) / 2;
+        const cardY = HEADER_H + (cardZoneH - cardH) / 2;
+
+        // Header
+        pdf.setDrawColor(220, 220, 220);
+        pdf.line(0, HEADER_H, PAGE_W_MM, HEADER_H);
+        if (logoDataUrl) pdf.addImage(logoDataUrl, 'PNG', 6, 4, 7, 7);
+        pdf.setTextColor(26, 26, 26);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.text('+1 Chopsticks', 15, 10);
+        pdf.setTextColor(120, 120, 120);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(7);
+        pdf.text('AUTHENTIC SHANGHAI HOME DINING', PAGE_W_MM - 8, 10, { align: 'right' });
+
+        // Cards
+        pdf.addImage(slice.toDataURL('image/jpeg', 0.92), 'JPEG', cardX, cardY, cardW, cardH);
+
+        // Footer
+        pdf.line(0, PAGE_H_MM - FOOTER_H, PAGE_W_MM, PAGE_H_MM - FOOTER_H);
+        pdf.setTextColor(120, 120, 120);
+        pdf.setFont('times', 'italic');
+        pdf.setFontSize(9);
+        pdf.text('plus1chopsticks.com', 8, PAGE_H_MM - FOOTER_H + 7.5);
+        pdf.addImage(qrCodeUrl, 'PNG', PAGE_W_MM - 11 - 3, PAGE_H_MM - FOOTER_H + 1, 10, 10);
       }
 
       const dinnerName = selectedDinner?.hostName ?? 'menu';
@@ -267,8 +371,6 @@ export default function App() {
     };
     reader.readAsDataURL(file);
   };
-
-  // TODO: Claude API auto-fill
 
   const handleAddDinner = (e: React.FormEvent) => {
     e.preventDefault();
@@ -607,7 +709,12 @@ export default function App() {
                     <input required={!newDish.englishName} type="text" value={newDish.chineseName} onChange={e => setNewDish(prev => ({ ...prev, chineseName: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-chinese" />
                   </div>
                 </div>
-                {/* TODO: Claude API auto-fill */}
+                <div className="flex justify-end">
+                  <button type="button" onClick={handleMagicGenerate} disabled={!newDish.chineseName?.trim() || isGenerating} className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-gray-300 rounded-lg font-sans font-medium text-gray-600 hover:border-[#c4a484] hover:text-[#c4a484] disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                    {isGenerating ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    Auto-fill
+                  </button>
+                </div>
                 <div className="space-y-2">
                   <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Pinyin</label>
                   <input type="text" value={newDish.pinyin} onChange={e => setNewDish(prev => ({ ...prev, pinyin: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif italic" />
@@ -665,7 +772,12 @@ export default function App() {
                     <input required={!newDish.englishName} type="text" value={newDish.chineseName} onChange={e => setNewDish(prev => ({ ...prev, chineseName: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-chinese" />
                   </div>
                 </div>
-                {/* TODO: Claude API auto-fill */}
+                <div className="flex justify-end">
+                  <button type="button" onClick={handleMagicGenerate} disabled={!newDish.chineseName?.trim() || isGenerating} className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-gray-300 rounded-lg font-sans font-medium text-gray-600 hover:border-[#c4a484] hover:text-[#c4a484] disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                    {isGenerating ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    Auto-fill
+                  </button>
+                </div>
                 <div className="space-y-2">
                   <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Pinyin</label>
                   <input type="text" value={newDish.pinyin} onChange={e => setNewDish(prev => ({ ...prev, pinyin: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif italic" />
