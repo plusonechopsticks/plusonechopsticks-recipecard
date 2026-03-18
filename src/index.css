@@ -24,6 +24,12 @@
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr;
     gap: 10mm;
+    overflow: hidden;
+  }
+
+  .print-page > * {
+    min-height: 0;
+    overflow: hidden;
   }
 
   @media print {

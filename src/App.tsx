@@ -1,11 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Printer, LayoutGrid, ChevronRight, MapPin, Quote, Info, Plus, Upload, X, Image as ImageIcon, Loader2, Sparkles, Calendar, User, Search, ChevronLeft, Pencil } from 'lucide-react';
-import { GoogleGenAI, Type } from "@google/genai";
+import { Printer, LayoutGrid, ChevronRight, MapPin, Quote, Info, Plus, Upload, X, Image as ImageIcon, Calendar, User, Search, ChevronLeft, Pencil, FileDown } from 'lucide-react';
 import { DISHES, Dish, Dinner } from './constants';
-
-// Initialize Gemini
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 const Logo = () => (
   <div className="flex flex-col items-center justify-center py-4">
@@ -34,7 +30,8 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
   const colors = typeColors[dish.type];
 
   return (
-    <div 
+    <div
+      data-recipe-card="true"
       className={`relative bg-white overflow-hidden flex flex-col group ${
         isPrint ? 'h-full border border-gray-200' : 'h-[700px] shadow-2xl rounded-3xl'
       } ${colors.bg}`}
@@ -61,7 +58,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
         </div>
       )}
 
-      <div className={`relative ${isPrint ? 'h-[60%]' : 'h-1/2'} overflow-hidden`}>
+      <div className={`relative ${isPrint ? 'h-[45%]' : 'h-1/2'} overflow-hidden`}>
         <img 
           src={dish.heroImage} 
           alt={dish.englishName}
@@ -71,7 +68,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
       </div>
 
-      <div className={`flex-1 ${isPrint ? 'p-6' : 'p-8'} flex flex-col`}>
+      <div className={`flex-1 ${isPrint ? 'p-4' : 'p-8'} flex flex-col`}>
         <div className={isPrint ? 'mb-4' : 'mb-6'}>
           <div className="flex items-center justify-between mb-1">
             <h2 className={`font-serif ${isPrint ? 'text-2xl' : 'text-3xl md:text-4xl'} font-light tracking-tight`}>
@@ -90,7 +87,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
           </div>
         </div>
 
-        <div className={`grid ${isPrint ? 'grid-cols-1 gap-4' : 'grid-cols-2 gap-8'} flex-1`}>
+        <div className={`grid ${isPrint ? 'grid-cols-2 gap-3' : 'grid-cols-2 gap-8'} flex-1`}>
           <div className={isPrint ? 'space-y-2' : 'space-y-4'}>
             <div className="flex items-center gap-2 border-b border-gray-100 pb-1">
               <Info size={12} className="text-gray-400" />
@@ -131,7 +128,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
           </div>
         </div>
 
-        <div className="mt-auto pt-6 flex justify-between items-end border-t border-gray-100/50">
+        <div className={`mt-auto ${isPrint ? 'pt-3' : 'pt-6'} flex justify-between items-end border-t border-gray-100/50`}>
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-3 text-gray-400">
               <div className="flex items-center gap-1.5">
@@ -160,7 +157,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
 };
 
 export default function App() {
-  const [view, setView] = useState<'dinners' | 'dinner-detail' | 'print'>('dinners');
+  const [view, setView] = useState<'dinners' | 'dinner-detail'>('dinners');
   const [dishes, setDishes] = useState<Dish[]>(DISHES);
   const [dinners, setDinners] = useState<Dinner[]>([
     {
@@ -180,15 +177,74 @@ export default function App() {
   const [isEditDishModalOpen, setIsEditDishModalOpen] = useState(false);
   const [editingDishId, setEditingDishId] = useState<string | null>(null);
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
-  const [printError, setPrintError] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const cardGridRef = useRef<HTMLDivElement>(null);
+
+  const handleDownloadPdf = async () => {
+    if (!cardGridRef.current) return;
+    setIsDownloadingPdf(true);
+    try {
+      const [{ default: jsPDF }, { toCanvas }] = await Promise.all([
+        import('jspdf'),
+        import('html-to-image'),
+      ]);
+
+      const cards = Array.from(
+        cardGridRef.current.querySelectorAll<HTMLElement>('[data-recipe-card]')
+      );
+      if (cards.length === 0) return;
+
+      // Measure row dimensions before async capture (DOM still laid out)
+      const cardHeight = cards[0].offsetHeight;
+      const gapPx = parseFloat(getComputedStyle(cardGridRef.current).rowGap) || 48;
+      const rowCount = Math.ceil(cards.length / 2);
+      const PIXEL_RATIO = 2;
+
+      const fullCanvas = await toCanvas(cardGridRef.current, {
+        pixelRatio: PIXEL_RATIO,
+        backgroundColor: '#ffffff',
+      });
+
+      // Canvas-space measurements
+      const canvasW = fullCanvas.width;
+      const rowStride = (cardHeight + gapPx) * PIXEL_RATIO; // top-of-row to top-of-next-row
+      const cardSliceH = cardHeight * PIXEL_RATIO;           // card pixels only, no trailing gap
+
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const PAGE_W_MM = 297, PAGE_H_MM = 210;
+
+      for (let i = 0; i < rowCount; i++) {
+        const sliceY = i * rowStride;
+        const sliceH = Math.min(cardSliceH, fullCanvas.height - sliceY);
+        if (sliceH <= 0) break;
+
+        const slice = document.createElement('canvas');
+        slice.width = canvasW;
+        slice.height = sliceH;
+        slice.getContext('2d')!.drawImage(fullCanvas, 0, sliceY, canvasW, sliceH, 0, 0, canvasW, sliceH);
+
+        // Preserve aspect ratio, centre vertically on A4
+        const renderedW = PAGE_W_MM;
+        const renderedH = sliceH * (PAGE_W_MM / canvasW);
+        const yOffset = (PAGE_H_MM - renderedH) / 2;
+
+        if (i > 0) pdf.addPage();
+        pdf.addImage(slice.toDataURL('image/jpeg', 0.92), 'JPEG', 0, yOffset, renderedW, renderedH);
+      }
+
+      const dinnerName = selectedDinner?.hostName ?? 'menu';
+      pdf.save(`${dinnerName.replace(/\s+/g, '-').toLowerCase()}-recipe-cards.pdf`);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [view]);
   
   const [isUploading, setIsUploading] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  
+
   const [newDinner, setNewDinner] = useState<Partial<Dinner>>({
     hostName: '', district: '', city: 'Shanghai', date: new Date().toISOString().split('T')[0], dishIds: []
   });
@@ -212,44 +268,7 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const handleMagicGenerate = async () => {
-    if (!newDish.heroImage || (!newDish.englishName && !newDish.chineseName)) {
-      alert("Please upload a photo and enter at least one name first.");
-      return;
-    }
-    setIsGenerating(true);
-    try {
-      const base64Data = newDish.heroImage.split(',')[1];
-      const prompt = `Analyze this food image and the provided name: "${newDish.englishName || newDish.chineseName}". Generate details for a high-end Shanghai home dining recipe card. Return JSON: englishName, chineseName, pinyin, ingredients (array), story, culturalNote, type (meat/veggie/seafood).`;
-      const response = await genAI.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64Data } }] }],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              englishName: { type: Type.STRING },
-              chineseName: { type: Type.STRING },
-              pinyin: { type: Type.STRING },
-              ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
-              story: { type: Type.STRING },
-              culturalNote: { type: Type.STRING },
-              type: { type: Type.STRING, enum: ['meat', 'veggie', 'seafood'] }
-            },
-            required: ['englishName', 'chineseName', 'pinyin', 'ingredients', 'story', 'culturalNote', 'type']
-          }
-        }
-      });
-      const result = JSON.parse(response.text);
-      setNewDish(prev => ({ ...prev, ...result }));
-    } catch (error) {
-      console.error("AI Generation failed:", error);
-      alert("Failed to generate details.");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  // TODO: Claude API auto-fill
 
   const handleAddDinner = (e: React.FormEvent) => {
     e.preventDefault();
@@ -316,10 +335,6 @@ export default function App() {
     setIsDishModalOpen(true);
   };
 
-  const dishPairs = [];
-  for (let i = 0; i < dinnerDishes.length; i += 2) {
-    dishPairs.push(dinnerDishes.slice(i, i + 2));
-  }
 
   return (
     <div className="min-h-screen">
@@ -356,30 +371,15 @@ export default function App() {
                 <Search size={16} />
                 <span>Library</span>
               </button>
-              <button 
+              <button
                 onClick={openNewDishModal}
                 className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-[#c4a484] text-white hover:bg-[#b39373] transition-all shadow-lg shadow-[#c4a484]/20"
               >
                 <Plus size={16} />
                 <span>Add Dish</span>
               </button>
-              <button 
-                onClick={() => setView('print')}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-black text-white hover:bg-gray-800 transition-all"
-              >
-                <Printer size={16} />
-                <span>Print Menu</span>
-              </button>
             </>
-          ) : (
-            <button 
-              onClick={() => setView('dinner-detail')}
-              className="flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium bg-black text-white hover:bg-gray-800 transition-all"
-            >
-              <ChevronLeft size={16} />
-              <span>Back to Dinner</span>
-            </button>
-          )}
+          ) : null}
         </div>
       </nav>
 
@@ -466,23 +466,32 @@ export default function App() {
                       <span>{selectedDinner?.district}, {selectedDinner?.city}</span>
                     </div>
                     <div className="w-1 h-1 rounded-full bg-gray-300" />
-                    <button 
-                      onClick={() => setView('print')}
+                    <button
+                      onClick={() => window.print()}
                       className="flex items-center gap-1.5 text-black hover:text-[#c4a484] transition-colors font-medium"
                     >
                       <Printer size={16} />
-                      <span>Print Menu</span>
+                      <span>Print</span>
+                    </button>
+                    <div className="w-1 h-1 rounded-full bg-gray-300" />
+                    <button
+                      onClick={handleDownloadPdf}
+                      disabled={isDownloadingPdf}
+                      className="flex items-center gap-1.5 text-black hover:text-[#c4a484] transition-colors font-medium disabled:opacity-40"
+                    >
+                      <FileDown size={16} />
+                      <span>{isDownloadingPdf ? 'Generating…' : 'Download PDF'}</span>
                     </button>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
+              <div ref={cardGridRef} className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 {dinnerDishes.map(dish => (
-                  <RecipeCard 
-                    key={dish.id} 
-                    dish={dish} 
-                    dinner={selectedDinner!} 
+                  <RecipeCard
+                    key={dish.id}
+                    dish={dish}
+                    dinner={selectedDinner!}
                     onRemove={handleRemoveDishFromDinner}
                     onEdit={(dish) => {
                       setNewDish({
@@ -494,65 +503,18 @@ export default function App() {
                     }}
                   />
                 ))}
-                <button 
-                  onClick={openNewDishModal}
-                  className="h-[700px] border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center gap-4 hover:border-[#c4a484] hover:bg-[#c4a484]/5 transition-all group"
-                >
-                  <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-300 group-hover:bg-[#c4a484] group-hover:text-white transition-all">
-                    <Plus size={32} />
-                  </div>
-                  <p className="font-serif text-xl text-gray-400 italic">Add a dish to this dinner</p>
-                </button>
               </div>
-            </motion.div>
-          ) : (
-            <motion.div 
-              key="print"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="flex flex-col gap-12 items-center"
-            >
-              <div className="no-print text-center max-w-md mb-8">
-                <h2 className="font-serif text-3xl mb-2">Print Menu Cards</h2>
-                <p className="text-gray-500 text-sm mb-6">
-                  Ready for {selectedDinner?.hostName}'s dinner. Cards are arranged two per A4 page.
-                  <br />
-                  <span className="text-xs italic opacity-70">Note: If the print dialog doesn't open, please open this app in a new tab using the button in the top right.</span>
-                </p>
-                <button 
-                  onClick={() => {
-                    try {
-                      window.print();
-                    } catch (e) {
-                      setPrintError(true);
-                    }
-                  }}
-                  className="bg-[#c4a484] text-white px-8 py-3 rounded-full font-bold hover:bg-[#b39373] transition-colors shadow-xl shadow-[#c4a484]/20"
-                >
-                  Print Now
-                </button>
-                {printError && (
-                  <p className="mt-4 text-rose-500 text-xs">
-                    Print dialog blocked. Please open this app in a new tab to print.
-                  </p>
-                )}
-              </div>
-              
-              {dishPairs.map((pair, idx) => (
-                <div key={idx} className="print-page shadow-2xl border border-gray-200">
-                  {pair.map(dish => (
-                    <RecipeCard key={dish.id} dish={dish} dinner={selectedDinner!} isPrint={true} />
-                  ))}
-                  {pair.length === 1 && (
-                    <div className="h-full border border-dashed border-gray-200 flex items-center justify-center">
-                      <p className="font-serif text-gray-300 italic">Empty Card Space</p>
-                    </div>
-                  )}
+              <button
+                onClick={openNewDishModal}
+                className="mt-12 w-full h-32 border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center gap-3 hover:border-[#c4a484] hover:bg-[#c4a484]/5 transition-all group"
+              >
+                <div className="flex items-center gap-3 text-gray-400 group-hover:text-[#c4a484] transition-colors">
+                  <Plus size={20} />
+                  <p className="font-serif text-lg italic">Add a dish to this dinner</p>
                 </div>
-              ))}
+              </button>
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
       </main>
 
@@ -645,9 +607,7 @@ export default function App() {
                     <input required={!newDish.englishName} type="text" value={newDish.chineseName} onChange={e => setNewDish(prev => ({ ...prev, chineseName: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-chinese" />
                   </div>
                 </div>
-                <button type="button" onClick={handleMagicGenerate} disabled={isGenerating || !newDish.heroImage} className="w-full py-3 rounded-xl border-2 border-[#c4a484] text-[#c4a484] font-bold flex items-center justify-center gap-2">
-                  {isGenerating ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />} Magic Generate
-                </button>
+                {/* TODO: Claude API auto-fill */}
                 <div className="space-y-2">
                   <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Pinyin</label>
                   <input type="text" value={newDish.pinyin} onChange={e => setNewDish(prev => ({ ...prev, pinyin: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif italic" />
@@ -705,9 +665,7 @@ export default function App() {
                     <input required={!newDish.englishName} type="text" value={newDish.chineseName} onChange={e => setNewDish(prev => ({ ...prev, chineseName: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-chinese" />
                   </div>
                 </div>
-                <button type="button" onClick={handleMagicGenerate} disabled={isGenerating || !newDish.heroImage} className="w-full py-3 rounded-xl border-2 border-[#c4a484] text-[#c4a484] font-bold flex items-center justify-center gap-2">
-                  {isGenerating ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />} Magic Generate
-                </button>
+                {/* TODO: Claude API auto-fill */}
                 <div className="space-y-2">
                   <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Pinyin</label>
                   <input type="text" value={newDish.pinyin} onChange={e => setNewDish(prev => ({ ...prev, pinyin: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif italic" />
