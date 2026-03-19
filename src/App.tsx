@@ -81,10 +81,11 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
 
       <div className={`flex-1 ${isPrint ? 'p-4' : 'p-8'} flex flex-col`}>
         <div className={isPrint ? 'mb-4' : 'mb-6'}>
+          <div className={`${isPrint ? 'min-h-[60px]' : 'min-h-[80px]'} flex flex-col justify-start`}>
           <div className="flex items-center justify-between mb-1">
             <h2
-              className={`font-handwriting font-semibold tracking-tight leading-tight ${isPrint ? 'text-xl' : ''}`}
-              style={!isPrint ? { fontSize: 'clamp(1.2rem, 3.5vw, 2rem)' } : undefined}
+              className={`font-handwriting font-semibold tracking-tight leading-tight ${isPrint ? 'text-lg' : ''}`}
+              style={!isPrint ? { fontSize: 'clamp(1rem, 2.8vw, 1.6rem)' } : undefined}
             >
               {dish.englishName}
             </h2>
@@ -95,6 +96,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
           <div className="flex items-baseline gap-3">
             <span className={`font-chinese ${isPrint ? 'text-2xl' : 'text-2xl'} text-[#c4a484]`}>{dish.chineseName}</span>
             <span className="font-serif italic text-base text-gray-700">{dish.pinyin}</span>
+          </div>
           </div>
         </div>
 
@@ -134,7 +136,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
             {!isPrint && (
               <div className="pt-2 space-y-3">
                 <div>
-                  <p className="font-sans text-[9px] uppercase tracking-widest font-bold text-[#c4a484] mb-1">Cultural Note</p>
+                  <p className="font-sans text-[9px] uppercase tracking-widest font-bold text-[#c4a484] mb-1">Host's Secret</p>
                   <p className="font-serif text-sm text-gray-500 leading-snug">
                     {dish.culturalNote}
                   </p>
@@ -150,13 +152,21 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
                 )}
               </div>
             )}
-            {isPrint && dish.familySecret && (
-              <div className="pt-1">
-                <p className="font-sans text-[8px] uppercase tracking-widest font-bold text-[#c4a484] mb-0.5">家庭秘方</p>
-                <div className="font-handwriting text-sm text-[#8a6a3a] leading-snug flex items-start gap-1">
-                  <Pencil size={10} className="mt-0.5 shrink-0 text-[#c4a484]" />
-                  <span>{dish.familySecret}</span>
+            {isPrint && (
+              <div className="pt-1 space-y-2">
+                <div>
+                  <p className="font-sans text-[8px] uppercase tracking-widest font-bold text-[#c4a484] mb-0.5">Host's Secret</p>
+                  <p className="font-serif text-xs text-gray-500 leading-snug line-clamp-2">{dish.culturalNote}</p>
                 </div>
+                {dish.familySecret && (
+                  <div>
+                    <p className="font-sans text-[8px] uppercase tracking-widest font-bold text-[#c4a484] mb-0.5">家庭秘方</p>
+                    <div className="font-handwriting text-xs text-[#8a6a3a] leading-snug flex items-start gap-1 line-clamp-2">
+                      <Pencil size={10} className="mt-0.5 shrink-0 text-[#c4a484]" />
+                      <span>{dish.familySecret}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -249,7 +259,7 @@ Return ONLY a JSON object with these exact fields, no other text:
   "type": "veggie" or "meat" or "seafood",
   "ingredients": ["ingredient 1", "ingredient 2", "ingredient 3", "ingredient 4"],
   "story": "Exactly 2 sentences maximum, under 40 words total",
-  "culturalNote": "Exactly 1 sentence, under 20 words",
+  "culturalNote": "Host's secret or personal touch — exactly 1 sentence, under 20 words",
   "familySecret": "One specific cooking tip or secret technique that makes this dish special at home, under 15 words. Something a home cook would know."
 }`
           }]
@@ -780,7 +790,7 @@ Return ONLY a JSON object with these exact fields, no other text:
                   <textarea value={newDish.story} onChange={e => setNewDish(prev => ({ ...prev, story: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif italic min-h-[80px]" />
                 </div>
                 <div className="space-y-2">
-                  <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Cultural Note</label>
+                  <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Host's Secret</label>
                   <textarea value={newDish.culturalNote} onChange={e => setNewDish(prev => ({ ...prev, culturalNote: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif min-h-[60px]" />
                 </div>
                 <div className="space-y-2">
@@ -850,7 +860,7 @@ Return ONLY a JSON object with these exact fields, no other text:
                   <textarea value={newDish.story} onChange={e => setNewDish(prev => ({ ...prev, story: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif italic min-h-[80px]" />
                 </div>
                 <div className="space-y-2">
-                  <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Cultural Note</label>
+                  <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Host's Secret</label>
                   <textarea value={newDish.culturalNote} onChange={e => setNewDish(prev => ({ ...prev, culturalNote: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif min-h-[60px]" />
                 </div>
                 <div className="space-y-2">
