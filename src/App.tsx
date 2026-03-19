@@ -549,6 +549,26 @@ Return ONLY a JSON object with these exact fields, no other text:
         </AnimatePresence>
       </main>
 
+      {/* Print header — hidden on screen, fixed on every print page */}
+      <div className="hidden print-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '18px', height: '18px' }}>
+            <path d="M7 2L5 22" stroke="#c4a484" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M12 2L10 22" stroke="#c4a484" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M19 7V13" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M16 10H22" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          <span style={{ fontFamily: 'serif', fontWeight: 700, fontSize: '13pt', color: '#1a1a1a' }}>+1 Chopsticks</span>
+        </div>
+        <span style={{ fontFamily: 'sans-serif', fontSize: '7pt', letterSpacing: '0.2em', color: '#888', textTransform: 'uppercase' }}>Authentic Shanghai Home Dining</span>
+      </div>
+
+      {/* Print footer — hidden on screen, fixed on every print page */}
+      <div className="hidden print-footer">
+        <span>plus1chopsticks.com</span>
+        <span>{selectedDinner ? `${formatHostName(selectedDinner.hostName)} · ${selectedDinner.date}` : ''}</span>
+      </div>
+
       {/* Modals */}
       <AnimatePresence>
         {/* New Dinner Modal */}

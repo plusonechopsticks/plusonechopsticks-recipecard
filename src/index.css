@@ -17,7 +17,7 @@
 @media print {
   @page {
     size: A4 landscape;
-    margin: 0;
+    margin: 14mm 10mm 12mm 10mm;
   }
 
   * {
@@ -27,8 +27,8 @@
 
   body {
     background: #fdfaf5 !important;
-    padding: 8mm !important;
     margin: 0 !important;
+    padding: 0 !important;
   }
 
   nav,
@@ -43,19 +43,56 @@
     margin: 0 !important;
   }
 
+  /* Remove space-y-12 gaps between rows so rows butt up against each other */
+  .space-y-12 > * + * {
+    margin-top: 0 !important;
+  }
+
   .card-row {
     display: grid !important;
     grid-template-columns: 1fr 1fr;
     gap: 8mm;
-    height: 210mm !important;
-    max-height: 210mm !important;
+    height: calc(210mm - 14mm - 12mm - 16mm) !important;
+    max-height: calc(210mm - 14mm - 12mm - 16mm) !important;
     overflow: hidden !important;
     page-break-after: always;
     break-after: page;
   }
 
   .card-row > * {
-    max-height: calc(210mm - 16mm) !important;
+    max-height: calc(210mm - 14mm - 12mm - 16mm) !important;
     overflow: hidden !important;
+  }
+
+  /* Print header */
+  .print-header {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 12mm;
+    background: white;
+    border-bottom: 0.5px solid #e0d5c5;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10mm;
+  }
+
+  /* Print footer */
+  .print-footer {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 10mm;
+    background: white;
+    border-top: 0.5px solid #e0d5c5;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10mm;
+    font-size: 8pt;
+    color: #888;
   }
 }
