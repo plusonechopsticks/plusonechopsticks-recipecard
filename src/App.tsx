@@ -21,6 +21,12 @@ interface RecipeCardProps {
   isPrint?: boolean;
 }
 
+const formatHostName = (name: string): string => {
+  const words = name.trim().split(/\s+/);
+  if (words.length < 2) return name;
+  return words[0] + ' ' + words[words.length - 1][0] + '.';
+};
+
 const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; onEdit?: (dish: Dish) => void }> = ({ dish, dinner, isPrint = false, onRemove, onEdit }) => {
   const typeColors = {
     veggie: { bg: 'bg-emerald-50/20', badge: 'bg-emerald-50 text-emerald-700' },
@@ -75,7 +81,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
         <div className={isPrint ? 'mb-4' : 'mb-6'}>
           <div className="flex items-center justify-between mb-1">
             <h2
-              className={`font-handwriting font-semibold tracking-tight leading-tight line-clamp-2 ${isPrint ? 'text-2xl' : ''}`}
+              className={`font-handwriting font-semibold tracking-tight leading-tight ${isPrint ? 'text-xl' : ''}`}
               style={!isPrint ? { fontSize: 'clamp(1.2rem, 3.5vw, 2rem)' } : undefined}
             >
               {dish.englishName}
@@ -97,14 +103,16 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
               <h3 className="font-sans text-[11px] uppercase tracking-widest font-bold text-gray-700">Key Ingredients</h3>
             </div>
             {(() => {
-              const ingredientList = Array.isArray(dish.ingredients)
+              const ingredientList = (Array.isArray(dish.ingredients)
                 ? dish.ingredients
-                : (dish.ingredients as unknown as string).split(',').map(s => s.trim()).filter(Boolean);
+                : (dish.ingredients as unknown as string).split(',').map(s => s.trim()).filter(Boolean)
+              ).slice(0, 16);
+              const twoCol = ingredientList.length > 4;
               return (
-                <ul className={isPrint ? 'space-y-1' : 'space-y-2'}>
+                <ul className={twoCol ? 'grid grid-cols-2 gap-x-4 gap-y-1' : (isPrint ? 'space-y-1' : 'space-y-2')}>
                   {ingredientList.map((ing, idx) => (
-                    <li key={idx} className={`font-serif ${isPrint ? 'text-sm' : 'text-sm'} text-gray-700 flex items-start gap-2`}>
-                      <span className="text-[#c4a484] mt-0.5">•</span>
+                    <li key={idx} className="font-serif text-xs text-gray-700 flex items-start gap-1.5">
+                      <span className="text-[#c4a484] mt-0.5 shrink-0">•</span>
                       {ing}
                     </li>
                   ))}
@@ -155,7 +163,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
         <div className={`mt-auto ${isPrint ? 'pt-3' : 'pt-6'} flex justify-between items-end border-t border-gray-100/50`}>
           <div className="flex items-center gap-3 text-gray-600">
             <div className="flex items-center gap-1.5">
-              <span className="font-handwriting text-[12px] text-gray-800 whitespace-nowrap truncate max-w-[100px]">{dinner.hostName}</span>
+              <span className="font-handwriting text-[13px] text-gray-800 whitespace-nowrap">{formatHostName(dinner.hostName)}</span>
               <div className="w-1 h-1 rounded-full bg-gray-300" />
               <span className="font-serif text-[12px] text-gray-700">{dinner.date}</span>
             </div>
@@ -182,6 +190,14 @@ export default function App() {
       city: 'Shanghai',
       date: '2026-03-20',
       dishIds: ['1', '2', '6']
+    },
+    {
+      id: 'd2',
+      hostName: 'Norika and Steven',
+      district: 'Jing\'an',
+      city: 'Shanghai',
+      date: '2026-04-05',
+      dishIds: ['8', '3', '5']
     }
   ]);
   const [selectedDinnerId, setSelectedDinnerId] = useState<string | null>(null);
@@ -226,7 +242,7 @@ Given this Chinese dish name: ${chineseName}
 
 Return ONLY a JSON object with these exact fields, no other text:
 {
-  "englishName": "English dish name",
+  "englishName": "English dish name, must be under 50 characters",
   "pinyin": "Accurate Mandarin romanization with correct tone marks (ā á ǎ à, ē é ě è etc). Double-check tones carefully.",
   "type": "veggie" or "meat" or "seafood",
   "ingredients": ["ingredient 1", "ingredient 2", "ingredient 3", "ingredient 4"],
@@ -724,8 +740,11 @@ Return ONLY a JSON object with these exact fields, no other text:
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">English Name</label>
-                    <input required={!newDish.chineseName} type="text" value={newDish.englishName} onChange={e => setNewDish(prev => ({ ...prev, englishName: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif" />
+                    <div className="flex justify-between items-center">
+                      <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">English Name</label>
+                      <span className="font-sans text-[10px] text-gray-400">{(newDish.englishName ?? '').length}/50</span>
+                    </div>
+                    <input required={!newDish.chineseName} type="text" maxLength={50} value={newDish.englishName} onChange={e => setNewDish(prev => ({ ...prev, englishName: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif" />
                   </div>
                   <div className="space-y-2">
                     <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Chinese Name</label>
@@ -791,8 +810,11 @@ Return ONLY a JSON object with these exact fields, no other text:
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">English Name</label>
-                    <input required={!newDish.chineseName} type="text" value={newDish.englishName} onChange={e => setNewDish(prev => ({ ...prev, englishName: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif" />
+                    <div className="flex justify-between items-center">
+                      <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">English Name</label>
+                      <span className="font-sans text-[10px] text-gray-400">{(newDish.englishName ?? '').length}/50</span>
+                    </div>
+                    <input required={!newDish.chineseName} type="text" maxLength={50} value={newDish.englishName} onChange={e => setNewDish(prev => ({ ...prev, englishName: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif" />
                   </div>
                   <div className="space-y-2">
                     <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Chinese Name</label>

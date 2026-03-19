@@ -97,5 +97,17 @@ export const DISHES: Dish[] = [
     story: 'A warm, sweet hug to end the meal. The chewy rice balls are filled with silky red bean paste and served in a fragrant syrup.',
     culturalNote: 'Traditionally eaten during the Lantern Festival to celebrate the first full moon of the lunar year.',
     type: 'veggie'
+  },
+  {
+    id: '8',
+    englishName: 'Slow-Braised Dongpo Pork Belly with Soy Glaze',
+    chineseName: '东坡红烧肉',
+    pinyin: 'Dōng pō hóng shāo ròu',
+    heroImage: 'https://images.pexels.com/photos/1410235/pexels-photo-1410235.jpeg?w=800',
+    ingredients: ['Pork Belly', 'Shaoxing Wine', 'Dark Soy Sauce', 'Light Soy Sauce', 'Rock Sugar', 'Ginger', 'Scallion', 'Star Anise', 'Cinnamon', 'Bay Leaves', 'Dried Tangerine Peel', 'Sesame Oil'],
+    story: 'Named after the Song Dynasty poet Su Dongpo, this dish is braised low and slow until the fat melts into silk. It is the ultimate test of patience and love in the kitchen.',
+    culturalNote: 'Su Dongpo reportedly invented this dish while governing Hangzhou, sharing pork with the people who helped build the famous Su Causeway.',
+    familySecret: '先用绍兴酒腌制一晚，红烧时加盖不开锅',
+    type: 'meat'
   }
 ];
