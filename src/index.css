@@ -14,42 +14,48 @@
   }
 }
 
-@layer utilities {
-  .print-page {
-    width: 297mm;
-    height: 210mm;
-    padding: 10mm;
-    margin: 0 auto;
-    background: white;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr;
-    gap: 10mm;
-    overflow: hidden;
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
   }
 
-  .print-page > * {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  nav,
+  .no-print,
+  button {
+    display: none !important;
+  }
+
+  body {
+    background: #fdfaf5 !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Hide everything except the dinner-detail card rows */
+  .space-y-12 > * {
+    display: none;
+  }
+
+  .card-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8mm;
+    page-break-after: always;
+    break-after: page;
+    height: calc(210mm - 20mm); /* full page height minus margins */
+  }
+
+  .card-row > * {
     min-height: 0;
     overflow: hidden;
-  }
-
-  @media print {
-    @page {
-      size: A4 landscape;
-      margin: 0;
-    }
-    body {
-      background: none;
-    }
-    .no-print {
-      display: none;
-    }
-    .print-page {
-      margin: 0;
-      padding: 10mm;
-      width: 297mm;
-      height: 210mm;
-      page-break-after: always;
-    }
   }
 }

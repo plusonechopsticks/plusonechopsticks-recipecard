@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import QRCode from 'qrcode';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Printer, LayoutGrid, ChevronRight, MapPin, Quote, Info, Plus, Upload, X, Image as ImageIcon, Calendar, User, Search, ChevronLeft, Pencil, FileDown, Sparkles, Loader2 } from 'lucide-react';
+import { Printer, LayoutGrid, ChevronRight, MapPin, Quote, Info, Plus, Upload, X, Image as ImageIcon, Calendar, User, Search, ChevronLeft, Pencil, Sparkles, Loader2 } from 'lucide-react';
 import { DISHES, Dish, Dinner } from './constants';
 
 const Logo = () => (
@@ -220,16 +219,7 @@ export default function App() {
   const [isEditDishModalOpen, setIsEditDishModalOpen] = useState(false);
   const [editingDishId, setEditingDishId] = useState<string | null>(null);
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
-  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
-  const cardGridRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    QRCode.toDataURL('https://plus1chopsticks.com', { width: 80, margin: 1 })
-      .then(setQrCodeUrl)
-      .catch(() => {});
-  }, []);
 
   const handleMagicGenerate = async () => {
     const chineseName = newDish.chineseName?.trim();
@@ -286,116 +276,6 @@ Return ONLY a JSON object with these exact fields, no other text:
     }
   };
 
-  const handleDownloadPdf = async () => {
-    if (!cardGridRef.current) return;
-    if (!qrCodeUrl) return;
-    setIsDownloadingPdf(true);
-    try {
-      const [{ default: jsPDF }, { toCanvas }] = await Promise.all([
-        import('jspdf'),
-        import('html-to-image'),
-      ]);
-
-      const cards = Array.from(
-        cardGridRef.current.querySelectorAll<HTMLElement>('[data-recipe-card]')
-      );
-      if (cards.length === 0) return;
-
-      // Measure row dimensions before async capture (DOM still laid out)
-      const cardHeight = cards[0].offsetHeight;
-      const gapPx = parseFloat(getComputedStyle(cardGridRef.current).rowGap) || 48;
-      const rowCount = Math.ceil(cards.length / 2);
-      const PIXEL_RATIO = 2;
-
-      const fullCanvas = await toCanvas(cardGridRef.current, {
-        pixelRatio: PIXEL_RATIO,
-        backgroundColor: '#fdfaf5',
-        style: {
-          padding: '24px',
-        },
-      });
-
-      // Canvas-space measurements
-      const canvasW = fullCanvas.width;
-      const rowStride = (cardHeight + gapPx) * PIXEL_RATIO; // top-of-row to top-of-next-row
-      const cardSliceH = cardHeight * PIXEL_RATIO;           // card pixels only, no trailing gap
-
-      // Build chopsticks logo as a PNG data URL from the SVG
-      const svgStr = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M7 2L5 22" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
-        <path d="M12 2L10 22" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
-        <path d="M19 7V13" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
-        <path d="M16 10H22" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
-      </svg>`;
-      const svgDataUrl = 'data:image/svg+xml;base64,' + btoa(svgStr);
-      const logoDataUrl = await new Promise<string>((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-          const c = document.createElement('canvas');
-          c.width = 48; c.height = 48;
-          c.getContext('2d')!.drawImage(img, 0, 0, 48, 48);
-          resolve(c.toDataURL('image/png'));
-        };
-        img.onerror = () => resolve('');
-        img.src = svgDataUrl;
-      });
-
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-      const PAGE_W_MM = 297, PAGE_H_MM = 210;
-
-      for (let i = 0; i < rowCount; i++) {
-        const sliceY = i * rowStride;
-        const sliceH = Math.min(cardSliceH, fullCanvas.height - sliceY);
-        if (sliceH <= 0) break;
-
-        const slice = document.createElement('canvas');
-        slice.width = canvasW;
-        slice.height = sliceH;
-        slice.getContext('2d')!.drawImage(fullCanvas, 0, sliceY, canvasW, sliceH, 0, 0, canvasW, sliceH);
-
-        // Preserve aspect ratio, centre vertically on A4
-        const renderedH = sliceH * (PAGE_W_MM / canvasW);
-
-        if (i > 0) pdf.addPage();
-
-        const HEADER_H = 15, FOOTER_H = 12;
-        const cardZoneH = PAGE_H_MM - HEADER_H - FOOTER_H; // 183mm
-        const cardH = renderedH <= cardZoneH ? renderedH : cardZoneH;
-        const cardW = cardH === cardZoneH ? cardZoneH * (PAGE_W_MM / renderedH) : PAGE_W_MM;
-        const cardX = (PAGE_W_MM - cardW) / 2;
-        const cardY = HEADER_H + (cardZoneH - cardH) / 2;
-
-        // Header
-        pdf.setDrawColor(220, 220, 220);
-        pdf.line(0, HEADER_H, PAGE_W_MM, HEADER_H);
-        if (logoDataUrl) pdf.addImage(logoDataUrl, 'PNG', 6, 4, 7, 7);
-        pdf.setTextColor(26, 26, 26);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.text('+1 Chopsticks', 15, 10);
-        pdf.setTextColor(120, 120, 120);
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(7);
-        pdf.text('AUTHENTIC SHANGHAI HOME DINING', PAGE_W_MM - 8, 10, { align: 'right' });
-
-        // Cards
-        pdf.addImage(slice.toDataURL('image/jpeg', 0.92), 'JPEG', cardX, cardY, cardW, cardH);
-
-        // Footer
-        pdf.line(0, PAGE_H_MM - FOOTER_H, PAGE_W_MM, PAGE_H_MM - FOOTER_H);
-        pdf.setTextColor(120, 120, 120);
-        pdf.setFont('times', 'italic');
-        pdf.setFontSize(9);
-        pdf.text('plus1chopsticks.com', 8, PAGE_H_MM - FOOTER_H + 7.5);
-        pdf.addImage(qrCodeUrl, 'PNG', PAGE_W_MM - 11 - 3, PAGE_H_MM - FOOTER_H + 1, 10, 10);
-      }
-
-      const dinnerName = selectedDinner?.hostName ?? 'menu';
-      pdf.save(`${dinnerName.replace(/\s+/g, '-').toLowerCase()}-recipe-cards.pdf`);
-    } finally {
-      setIsDownloadingPdf(false);
-    }
-  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -627,37 +507,32 @@ Return ONLY a JSON object with these exact fields, no other text:
                       className="flex items-center gap-1.5 text-black hover:text-[#c4a484] transition-colors font-medium"
                     >
                       <Printer size={16} />
-                      <span>Print</span>
-                    </button>
-                    <div className="w-1 h-1 rounded-full bg-gray-300" />
-                    <button
-                      onClick={handleDownloadPdf}
-                      disabled={isDownloadingPdf}
-                      className="flex items-center gap-1.5 text-black hover:text-[#c4a484] transition-colors font-medium disabled:opacity-40"
-                    >
-                      <FileDown size={16} />
-                      <span>{isDownloadingPdf ? 'Generating…' : 'Download PDF'}</span>
+                      <span>Save as PDF</span>
                     </button>
                   </div>
                 </div>
               </div>
 
-              <div ref={cardGridRef} className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                {dinnerDishes.map(dish => (
-                  <RecipeCard
-                    key={dish.id}
-                    dish={dish}
-                    dinner={selectedDinner!}
-                    onRemove={handleRemoveDishFromDinner}
-                    onEdit={(dish) => {
-                      setNewDish({
-                        ...dish,
-                        ingredients: dish.ingredients.join(', ') as any
-                      });
-                      setEditingDishId(dish.id);
-                      setIsEditDishModalOpen(true);
-                    }}
-                  />
+              <div className="space-y-12">
+                {Array.from({ length: Math.ceil(dinnerDishes.length / 2) }, (_, i) => (
+                  <div key={i} className="card-row grid grid-cols-1 md:grid-cols-2 gap-12">
+                    {dinnerDishes.slice(i * 2, i * 2 + 2).map(dish => (
+                      <RecipeCard
+                        key={dish.id}
+                        dish={dish}
+                        dinner={selectedDinner!}
+                        onRemove={handleRemoveDishFromDinner}
+                        onEdit={(dish) => {
+                          setNewDish({
+                            ...dish,
+                            ingredients: dish.ingredients.join(', ') as any
+                          });
+                          setEditingDishId(dish.id);
+                          setIsEditDishModalOpen(true);
+                        }}
+                      />
+                    ))}
+                  </div>
                 ))}
               </div>
               <button
