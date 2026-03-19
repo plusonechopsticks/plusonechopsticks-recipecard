@@ -84,7 +84,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
           <div className={`${isPrint ? 'min-h-[60px]' : 'min-h-[80px]'} flex flex-col justify-start`}>
           <div className="flex items-center justify-between mb-1">
             <h2
-              className={`font-handwriting font-semibold tracking-tight leading-tight ${isPrint ? 'text-lg' : ''}`}
+              className={`${isPrint ? 'font-serif' : 'font-handwriting'} font-semibold tracking-tight leading-tight line-clamp-2 ${isPrint ? 'text-xl' : ''}`}
               style={!isPrint ? { fontSize: 'clamp(1rem, 2.8vw, 1.6rem)' } : undefined}
             >
               {dish.englishName}
@@ -309,7 +309,10 @@ Return ONLY a JSON object with these exact fields, no other text:
 
       const fullCanvas = await toCanvas(cardGridRef.current, {
         pixelRatio: PIXEL_RATIO,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#fdfaf5',
+        style: {
+          padding: '24px',
+        },
       });
 
       // Canvas-space measurements
