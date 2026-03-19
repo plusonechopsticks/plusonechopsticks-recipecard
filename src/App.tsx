@@ -527,11 +527,6 @@ Return ONLY a JSON object with these exact fields, no other text:
                           }}
                         />
                       ))}
-                      {rowDishes.length === 1 && (
-                        <div className="invisible" aria-hidden="true">
-                          <div data-recipe-card="true" className="h-full" />
-                        </div>
-                      )}
                     </div>
                   );
                 })}
