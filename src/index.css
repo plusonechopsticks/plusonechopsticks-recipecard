@@ -52,6 +52,7 @@
     display: grid !important;
     grid-template-columns: 1fr 1fr;
     gap: 8mm;
+    height: 620px !important;
     page-break-after: always;
     break-after: page;
   }
@@ -63,6 +64,11 @@
 
   .card-row > * {
     overflow: hidden !important;
+  }
+
+  /* Override screen h-[700px]; grid stretch fills the 620px row */
+  [data-recipe-card] {
+    height: 100% !important;
   }
 
   /* Single card on last row — full width, centered */
