@@ -55,9 +55,13 @@
     justify-items: start !important;
     align-items: stretch !important;
     gap: 0px !important;
+    margin: 0 !important;
+    padding: 0 !important;
     height: 620px !important;
-    page-break-after: always;
-    break-after: page;
+    break-after: page !important;
+    page-break-after: always !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .card-row.gap-12 {
@@ -65,8 +69,8 @@
   }
 
   .card-row.grid:last-child {
-    page-break-after: avoid !important;
-    break-after: avoid !important;
+    break-after: auto !important;
+    page-break-after: auto !important;
   }
 
   .card-row > * {
