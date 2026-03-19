@@ -81,10 +81,10 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
 
       <div className={`flex-1 ${isPrint ? 'p-4' : 'p-8'} flex flex-col`}>
         <div className={isPrint ? 'mb-4' : 'mb-6'}>
-          <div className={`${isPrint ? 'min-h-[60px]' : 'min-h-[80px]'} flex flex-col justify-start`}>
+          <div className={`${isPrint ? 'min-h-[60px]' : 'min-h-[80px]'} flex flex-col justify-start overflow-hidden`}>
           <div className="flex items-center justify-between mb-1">
             <h2
-              className={`${isPrint ? 'font-serif' : 'font-handwriting'} font-semibold tracking-tight leading-tight line-clamp-2 ${isPrint ? 'text-xl' : ''}`}
+              className={`${isPrint ? 'font-serif' : 'font-handwriting'} font-semibold tracking-tight leading-tight ${isPrint ? 'text-xl' : ''}`}
               style={!isPrint ? { fontSize: 'clamp(1rem, 2.8vw, 1.6rem)' } : undefined}
             >
               {dish.englishName}
