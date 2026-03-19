@@ -69,9 +69,22 @@
     width: 100% !important;
   }
 
-  /* Override screen h-[700px]; grid stretch fills the 620px row */
+  /* Fixed card height — absolute rule, no reliance on parent grid */
   [data-recipe-card] {
-    height: 100% !important;
+    height: 620px !important;
+    min-height: 620px !important;
+    max-height: 620px !important;
+  }
+
+  /* Remove text truncation inside cards */
+  [data-recipe-card] [class*="line-clamp"],
+  [data-recipe-card] [class*="truncate"] {
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    display: block !important;
+    -webkit-box-orient: unset !important;
   }
 
   /* Print header */
