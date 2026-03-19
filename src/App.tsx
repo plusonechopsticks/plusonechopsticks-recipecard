@@ -506,27 +506,35 @@ Return ONLY a JSON object with these exact fields, no other text:
               </div>
 
               <div className="space-y-12">
-                {Array.from({ length: Math.ceil(dinnerDishes.length / 2) }, (_, i) => (
-                  <div key={i} className="card-row grid grid-cols-1 md:grid-cols-2 gap-12">
-                    {dinnerDishes.slice(i * 2, i * 2 + 2).map(dish => (
-                      <RecipeCard
-                        key={dish.id}
-                        dish={dish}
-                        dinner={selectedDinner!}
-                        isPrint={isPrinting}
-                        onRemove={handleRemoveDishFromDinner}
-                        onEdit={(dish) => {
-                          setNewDish({
-                            ...dish,
-                            ingredients: dish.ingredients.join(', ') as any
-                          });
-                          setEditingDishId(dish.id);
-                          setIsEditDishModalOpen(true);
-                        }}
-                      />
-                    ))}
-                  </div>
-                ))}
+                {Array.from({ length: Math.ceil(dinnerDishes.length / 2) }, (_, i) => {
+                  const rowDishes = dinnerDishes.slice(i * 2, i * 2 + 2);
+                  return (
+                    <div key={i} className="card-row grid grid-cols-1 md:grid-cols-2 gap-12">
+                      {rowDishes.map(dish => (
+                        <RecipeCard
+                          key={dish.id}
+                          dish={dish}
+                          dinner={selectedDinner!}
+                          isPrint={isPrinting}
+                          onRemove={handleRemoveDishFromDinner}
+                          onEdit={(dish) => {
+                            setNewDish({
+                              ...dish,
+                              ingredients: dish.ingredients.join(', ') as any
+                            });
+                            setEditingDishId(dish.id);
+                            setIsEditDishModalOpen(true);
+                          }}
+                        />
+                      ))}
+                      {rowDishes.length === 1 && (
+                        <div className="invisible" aria-hidden="true">
+                          <div data-recipe-card="true" className="h-full" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               <button
                 onClick={openNewDishModal}
