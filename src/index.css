@@ -28,7 +28,7 @@
   body {
     background: #fdfaf5 !important;
     margin: 0 !important;
-    padding: 14mm 10mm 12mm 10mm !important;
+    padding: 15mm 10mm 15mm 10mm !important;
   }
 
   nav,
@@ -52,8 +52,8 @@
     display: grid !important;
     grid-template-columns: 1fr 1fr;
     gap: 8mm;
-    height: calc(210mm - 14mm - 12mm) !important;
-    max-height: calc(210mm - 14mm - 12mm) !important;
+    height: 180mm !important;
+    max-height: 180mm !important;
     overflow: hidden !important;
     page-break-after: always;
     break-after: page;
@@ -65,8 +65,18 @@
   }
 
   .card-row > * {
-    max-height: calc(210mm - 14mm - 12mm) !important;
+    max-height: 180mm !important;
     overflow: hidden !important;
+  }
+
+  /* Single card on last row — full width, centered */
+  .card-row:has([data-recipe-card]:only-child) {
+    grid-template-columns: 1fr;
+  }
+
+  .card-row:has([data-recipe-card]:only-child) [data-recipe-card] {
+    max-width: 60%;
+    margin: 0 auto;
   }
 
   /* Print header */
