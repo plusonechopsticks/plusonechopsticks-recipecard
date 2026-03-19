@@ -140,15 +140,6 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
                     {dish.culturalNote}
                   </p>
                 </div>
-                {dish.familySecret && (
-                  <div>
-                    <p className="font-sans text-[9px] uppercase tracking-widest font-bold text-[#c4a484] mb-1">家庭秘方</p>
-                    <div className="font-handwriting text-base text-[#8a6a3a] leading-snug flex items-start gap-1">
-                      <Pencil size={12} className="mt-1 shrink-0 text-[#c4a484]" />
-                      <span>{dish.familySecret}</span>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
             {isPrint && (
@@ -157,15 +148,6 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
                   <p className="font-sans text-[8px] uppercase tracking-widest font-bold text-[#c4a484] mb-0.5">Host's Secret</p>
                   <p className="font-serif text-xs text-gray-500 leading-snug line-clamp-2">{dish.culturalNote}</p>
                 </div>
-                {dish.familySecret && (
-                  <div>
-                    <p className="font-sans text-[8px] uppercase tracking-widest font-bold text-[#c4a484] mb-0.5">家庭秘方</p>
-                    <div className="font-handwriting text-xs text-[#8a6a3a] leading-snug flex items-start gap-1 line-clamp-2">
-                      <Pencil size={10} className="mt-0.5 shrink-0 text-[#c4a484]" />
-                      <span>{dish.familySecret}</span>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>
