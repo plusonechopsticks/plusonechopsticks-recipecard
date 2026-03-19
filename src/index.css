@@ -51,7 +51,7 @@
   .card-row {
     display: grid !important;
     grid-template-columns: 1fr 1fr;
-    gap: 8mm;
+    gap: 0 !important;
     height: 620px !important;
     page-break-after: always;
     break-after: page;

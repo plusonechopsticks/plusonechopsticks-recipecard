@@ -262,7 +262,17 @@ Return ONLY a JSON object with these exact fields, no other text:
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [view]);
-  
+
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia('print');
+    const handler = (e: MediaQueryListEvent) => setIsPrinting(e.matches);
+    setIsPrinting(mql.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
+
   const [isUploading, setIsUploading] = useState(false);
 
   const [newDinner, setNewDinner] = useState<Partial<Dinner>>({
@@ -485,7 +495,7 @@ Return ONLY a JSON object with these exact fields, no other text:
                     </div>
                     <div className="w-1 h-1 rounded-full bg-gray-300" />
                     <button
-                      onClick={() => window.print()}
+                      onClick={() => { setIsPrinting(true); setTimeout(() => { window.print(); setTimeout(() => setIsPrinting(false), 500); }, 50); }}
                       className="flex items-center gap-1.5 text-black hover:text-[#c4a484] transition-colors font-medium"
                     >
                       <Printer size={16} />
@@ -503,6 +513,7 @@ Return ONLY a JSON object with these exact fields, no other text:
                         key={dish.id}
                         dish={dish}
                         dinner={selectedDinner!}
+                        isPrint={isPrinting}
                         onRemove={handleRemoveDishFromDinner}
                         onEdit={(dish) => {
                           setNewDish({
