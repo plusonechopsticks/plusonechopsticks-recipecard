@@ -17,7 +17,7 @@
 @media print {
   @page {
     size: A4 landscape;
-    margin: 14mm 10mm 12mm 10mm;
+    margin: 0;
   }
 
   * {
@@ -28,7 +28,7 @@
   body {
     background: #fdfaf5 !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 14mm 10mm 12mm 10mm !important;
   }
 
   nav,
@@ -43,7 +43,7 @@
     margin: 0 !important;
   }
 
-  /* Remove space-y-12 gaps between rows so rows butt up against each other */
+  /* Remove space-y-12 gaps between rows */
   .space-y-12 > * + * {
     margin-top: 0 !important;
   }
@@ -52,47 +52,56 @@
     display: grid !important;
     grid-template-columns: 1fr 1fr;
     gap: 8mm;
-    height: calc(210mm - 14mm - 12mm - 16mm) !important;
-    max-height: calc(210mm - 14mm - 12mm - 16mm) !important;
+    height: calc(210mm - 14mm - 12mm) !important;
+    max-height: calc(210mm - 14mm - 12mm) !important;
     overflow: hidden !important;
     page-break-after: always;
     break-after: page;
   }
 
+  .card-row:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
   .card-row > * {
-    max-height: calc(210mm - 14mm - 12mm - 16mm) !important;
+    max-height: calc(210mm - 14mm - 12mm) !important;
     overflow: hidden !important;
   }
 
   /* Print header */
   .print-header {
-    display: flex !important;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    height: 12mm;
-    background: white;
-    border-bottom: 0.5px solid #e0d5c5;
+    height: 14mm;
+    background: #fdfaf5;
+    display: flex !important;
     align-items: center;
     justify-content: space-between;
     padding: 0 10mm;
+    border-bottom: 0.5px solid #e0d5c5;
+    z-index: 1000;
   }
 
   /* Print footer */
   .print-footer {
-    display: flex !important;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 10mm;
-    background: white;
-    border-top: 0.5px solid #e0d5c5;
+    height: 12mm;
+    background: #fdfaf5;
+    display: flex !important;
     align-items: center;
     justify-content: space-between;
     padding: 0 10mm;
+    border-top: 0.5px solid #e0d5c5;
     font-size: 8pt;
     color: #888;
+    font-family: serif;
+    font-style: italic;
+    z-index: 1000;
   }
 }
