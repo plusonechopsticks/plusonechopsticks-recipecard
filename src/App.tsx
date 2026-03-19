@@ -23,9 +23,9 @@ interface RecipeCardProps {
 
 const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; onEdit?: (dish: Dish) => void }> = ({ dish, dinner, isPrint = false, onRemove, onEdit }) => {
   const typeColors = {
-    veggie: { bg: 'bg-emerald-50/30', accent: 'text-emerald-600', dot: 'bg-emerald-400' },
-    meat: { bg: 'bg-rose-50/30', accent: 'text-rose-600', dot: 'bg-rose-400' },
-    seafood: { bg: 'bg-blue-50/30', accent: 'text-blue-600', dot: 'bg-blue-400' }
+    veggie: { bg: 'bg-emerald-50/20', badge: 'bg-emerald-50 text-emerald-700' },
+    meat: { bg: 'bg-rose-50/20', badge: 'bg-rose-50 text-rose-700' },
+    seafood: { bg: 'bg-blue-50/20', badge: 'bg-blue-50 text-blue-700' }
   };
 
   const colors = typeColors[dish.type];
@@ -33,8 +33,8 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
   return (
     <div
       data-recipe-card="true"
-      className={`relative bg-white overflow-hidden flex flex-col group ${
-        isPrint ? 'h-full border border-gray-200' : 'h-[700px] shadow-2xl rounded-3xl'
+      className={`relative bg-[#fdfaf5] overflow-hidden flex flex-col group ${
+        isPrint ? 'h-full border border-[#e8dcc8]' : 'h-[700px] shadow-2xl rounded-2xl border border-[#e8dcc8]'
       } ${colors.bg}`}
       id={`dish-${dish.id}`}
     >
@@ -74,15 +74,12 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
       <div className={`flex-1 ${isPrint ? 'p-4' : 'p-8'} flex flex-col`}>
         <div className={isPrint ? 'mb-4' : 'mb-6'}>
           <div className="flex items-center justify-between mb-1">
-            <h2 className={`font-serif ${isPrint ? 'text-3xl' : 'text-3xl md:text-4xl'} font-light tracking-tight`}>
+            <h2 className={`font-handwriting ${isPrint ? 'text-3xl' : 'text-3xl md:text-4xl'} font-semibold tracking-tight`}>
               {dish.englishName}
             </h2>
-            <div className="flex items-center gap-2">
-              <div className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
-              <span className={`font-sans text-[8px] uppercase tracking-widest font-bold ${colors.accent}`}>
-                {dish.type}
-              </span>
-            </div>
+            <span className={`font-sans text-[8px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full ${colors.badge}`}>
+              {dish.type}
+            </span>
           </div>
           <div className="flex items-baseline gap-3">
             <span className={`font-chinese ${isPrint ? 'text-2xl' : 'text-2xl'} text-[#c4a484]`}>{dish.chineseName}</span>
@@ -92,28 +89,29 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
 
         <div className={`grid ${isPrint ? 'grid-cols-2 gap-3' : 'grid-cols-2 gap-8'} flex-1`}>
           <div className={isPrint ? 'space-y-2' : 'space-y-4'}>
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-1">
+            <div className="flex items-center gap-2 border-b border-dashed border-[#d4c5a9] pb-1">
               <Info size={12} className="text-gray-600" />
               <h3 className="font-sans text-[11px] uppercase tracking-widest font-bold text-gray-700">Key Ingredients</h3>
             </div>
-            {isPrint ? (
-              <p className="font-serif text-base text-gray-800 leading-relaxed italic">
-                {dish.ingredients.join(', ')}
-              </p>
-            ) : (
-              <ul className="space-y-2">
-                {dish.ingredients.map((ing, idx) => (
-                  <li key={idx} className="font-serif text-sm text-gray-600 flex items-center gap-2">
-                    <span className="w-1 h-1 bg-[#c4a484] rounded-full" />
-                    {ing}
-                  </li>
-                ))}
-              </ul>
-            )}
+            {(() => {
+              const ingredientList = Array.isArray(dish.ingredients)
+                ? dish.ingredients
+                : (dish.ingredients as unknown as string).split(',').map(s => s.trim()).filter(Boolean);
+              return (
+                <ul className={isPrint ? 'space-y-1' : 'space-y-2'}>
+                  {ingredientList.map((ing, idx) => (
+                    <li key={idx} className={`font-serif ${isPrint ? 'text-sm' : 'text-sm'} text-gray-700 flex items-start gap-2`}>
+                      <span className="text-[#c4a484] mt-0.5">•</span>
+                      {ing}
+                    </li>
+                  ))}
+                </ul>
+              );
+            })()}
           </div>
 
           <div className={isPrint ? 'space-y-3' : 'space-y-4'}>
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-1">
+            <div className="flex items-center gap-2 border-b border-dashed border-[#d4c5a9] pb-1">
               <Quote size={12} className="text-gray-600" />
               <h3 className="font-sans text-[11px] uppercase tracking-widest font-bold text-gray-700">The Story</h3>
             </div>
@@ -121,10 +119,30 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
               "{dish.story}"
             </p>
             {!isPrint && (
-              <div className="pt-2">
-                <p className="font-sans text-[9px] uppercase tracking-widest font-bold text-[#c4a484] mb-1">Cultural Note</p>
-                <p className="font-serif text-sm text-gray-500 leading-snug">
-                  {dish.culturalNote}
+              <div className="pt-2 space-y-3">
+                <div>
+                  <p className="font-sans text-[9px] uppercase tracking-widest font-bold text-[#c4a484] mb-1">Cultural Note</p>
+                  <p className="font-serif text-sm text-gray-500 leading-snug">
+                    {dish.culturalNote}
+                  </p>
+                </div>
+                {dish.familySecret && (
+                  <div>
+                    <p className="font-sans text-[9px] uppercase tracking-widest font-bold text-[#c4a484] mb-1">家庭秘方</p>
+                    <p className="font-handwriting text-base text-[#8a6a3a] leading-snug flex items-start gap-1">
+                      <Pencil size={12} className="mt-1 shrink-0 text-[#c4a484]" />
+                      {dish.familySecret}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+            {isPrint && dish.familySecret && (
+              <div className="pt-1">
+                <p className="font-sans text-[8px] uppercase tracking-widest font-bold text-[#c4a484] mb-0.5">家庭秘方</p>
+                <p className="font-handwriting text-sm text-[#8a6a3a] leading-snug flex items-start gap-1">
+                  <Pencil size={10} className="mt-0.5 shrink-0 text-[#c4a484]" />
+                  {dish.familySecret}
                 </p>
               </div>
             )}
@@ -134,7 +152,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
         <div className={`mt-auto ${isPrint ? 'pt-3' : 'pt-6'} flex justify-between items-end border-t border-gray-100/50`}>
           <div className="flex items-center gap-3 text-gray-600">
             <div className="flex items-center gap-1.5">
-              <span className="font-serif text-[12px] text-gray-800 italic">{dinner.hostName}</span>
+              <span className="font-handwriting text-[14px] text-gray-800">{dinner.hostName}</span>
               <div className="w-1 h-1 rounded-full bg-gray-300" />
               <span className="font-serif text-[12px] text-gray-700">{dinner.date}</span>
             </div>
@@ -206,11 +224,12 @@ Given this Chinese dish name: ${chineseName}
 Return ONLY a JSON object with these exact fields, no other text:
 {
   "englishName": "English dish name",
-  "pinyin": "Romanized pronunciation with tone marks",
+  "pinyin": "Accurate Mandarin romanization with correct tone marks (ā á ǎ à, ē é ě è etc). Double-check tones carefully.",
   "type": "veggie" or "meat" or "seafood",
   "ingredients": ["ingredient 1", "ingredient 2", "ingredient 3", "ingredient 4"],
   "story": "Exactly 2 sentences maximum, under 40 words total",
-  "culturalNote": "Exactly 1 sentence, under 20 words"
+  "culturalNote": "Exactly 1 sentence, under 20 words",
+  "familySecret": "One specific cooking tip or secret technique that makes this dish special at home, under 15 words. Something a home cook would know."
 }`
           }]
         })
@@ -224,9 +243,10 @@ Return ONLY a JSON object with these exact fields, no other text:
         englishName: parsed.englishName ?? prev.englishName,
         pinyin: parsed.pinyin ?? prev.pinyin,
         type: parsed.type ?? prev.type,
-        ingredients: parsed.ingredients?.join(', ') ?? prev.ingredients,
+        ingredients: parsed.ingredients ?? prev.ingredients,
         story: parsed.story ?? prev.story,
         culturalNote: parsed.culturalNote ?? prev.culturalNote,
+        familySecret: parsed.familySecret ?? prev.familySecret,
       }));
     } catch (e) {
       console.error('Claude API error', e);
@@ -354,7 +374,7 @@ Return ONLY a JSON object with these exact fields, no other text:
   });
   
   const [newDish, setNewDish] = useState<Partial<Dish>>({
-    englishName: '', chineseName: '', pinyin: '', ingredients: [], story: '', culturalNote: '', type: 'veggie', heroImage: ''
+    englishName: '', chineseName: '', pinyin: '', ingredients: [], story: '', culturalNote: '', familySecret: '', type: 'veggie', heroImage: ''
   });
 
   const selectedDinner = dinners.find(d => d.id === selectedDinnerId);
@@ -432,7 +452,7 @@ Return ONLY a JSON object with these exact fields, no other text:
 
   const openNewDishModal = () => {
     setNewDish({
-      englishName: '', chineseName: '', pinyin: '', ingredients: [], story: '', culturalNote: '', type: 'veggie', heroImage: ''
+      englishName: '', chineseName: '', pinyin: '', ingredients: [], story: '', culturalNote: '', familySecret: '', type: 'veggie', heroImage: ''
     });
     setIsDishModalOpen(true);
   };
@@ -739,6 +759,10 @@ Return ONLY a JSON object with these exact fields, no other text:
                   <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Cultural Note</label>
                   <textarea value={newDish.culturalNote} onChange={e => setNewDish(prev => ({ ...prev, culturalNote: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif min-h-[60px]" />
                 </div>
+                <div className="space-y-2">
+                  <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-[#c4a484]">家庭秘方 Family Secret <span className="text-gray-400 normal-case tracking-normal font-normal">(optional)</span></label>
+                  <textarea value={newDish.familySecret ?? ''} onChange={e => setNewDish(prev => ({ ...prev, familySecret: e.target.value }))} placeholder="e.g. 葱油需提前熬2小时 (scallion oil slow-cooked 2 hours)" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-handwriting text-base min-h-[60px] placeholder:font-sans placeholder:text-sm" />
+                </div>
                 <button type="submit" className="w-full py-4 bg-[#c4a484] text-white rounded-xl font-bold">Add to Dinner</button>
               </form>
             </motion.div>
@@ -801,6 +825,10 @@ Return ONLY a JSON object with these exact fields, no other text:
                 <div className="space-y-2">
                   <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Cultural Note</label>
                   <textarea value={newDish.culturalNote} onChange={e => setNewDish(prev => ({ ...prev, culturalNote: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-serif min-h-[60px]" />
+                </div>
+                <div className="space-y-2">
+                  <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-[#c4a484]">家庭秘方 Family Secret <span className="text-gray-400 normal-case tracking-normal font-normal">(optional)</span></label>
+                  <textarea value={newDish.familySecret ?? ''} onChange={e => setNewDish(prev => ({ ...prev, familySecret: e.target.value }))} placeholder="e.g. 葱油需提前熬2小时 (scallion oil slow-cooked 2 hours)" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-handwriting text-base min-h-[60px] placeholder:font-sans placeholder:text-sm" />
                 </div>
                 <button type="submit" className="w-full py-4 bg-[#c4a484] text-white rounded-xl font-bold">Save Changes</button>
               </form>

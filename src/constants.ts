@@ -8,6 +8,7 @@ export interface Dish {
   story: string;
   culturalNote: string;
   type: 'meat' | 'veggie' | 'seafood';
+  familySecret?: string;
 }
 
 export interface Dinner {
