@@ -74,7 +74,10 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
       <div className={`flex-1 ${isPrint ? 'p-4' : 'p-8'} flex flex-col`}>
         <div className={isPrint ? 'mb-4' : 'mb-6'}>
           <div className="flex items-center justify-between mb-1">
-            <h2 className={`font-handwriting ${isPrint ? 'text-3xl' : 'text-3xl md:text-4xl'} font-semibold tracking-tight`}>
+            <h2
+              className={`font-handwriting font-semibold tracking-tight leading-tight line-clamp-2 ${isPrint ? 'text-2xl' : ''}`}
+              style={!isPrint ? { fontSize: 'clamp(1.2rem, 3.5vw, 2rem)' } : undefined}
+            >
               {dish.englishName}
             </h2>
             <span className={`font-sans text-[8px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full ${colors.badge}`}>
@@ -152,7 +155,7 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
         <div className={`mt-auto ${isPrint ? 'pt-3' : 'pt-6'} flex justify-between items-end border-t border-gray-100/50`}>
           <div className="flex items-center gap-3 text-gray-600">
             <div className="flex items-center gap-1.5">
-              <span className="font-handwriting text-[14px] text-gray-800">{dinner.hostName}</span>
+              <span className="font-handwriting text-[12px] text-gray-800 whitespace-nowrap truncate max-w-[100px]">{dinner.hostName}</span>
               <div className="w-1 h-1 rounded-full bg-gray-300" />
               <span className="font-serif text-[12px] text-gray-700">{dinner.date}</span>
             </div>
