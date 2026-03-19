@@ -469,7 +469,7 @@ Return ONLY a JSON object with these exact fields, no other text:
               exit={{ opacity: 0, x: -20 }}
               className="max-w-7xl mx-auto"
             >
-              <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="dinner-header mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-2">
                     <h2 className="font-serif text-4xl">{selectedDinner?.hostName}'s Dinner</h2>
