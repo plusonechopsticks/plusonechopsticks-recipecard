@@ -28,6 +28,8 @@ const formatHostName = (name: string): string => {
 };
 
 const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; onEdit?: (dish: Dish) => void }> = ({ dish, dinner, isPrint = false, onRemove, onEdit }) => {
+  if (!dish || !dinner) return null;
+
   const typeColors = {
     veggie: { bg: 'bg-emerald-50/20', badge: 'bg-emerald-50 text-emerald-700' },
     meat: { bg: 'bg-rose-50/20', badge: 'bg-rose-50 text-rose-700' },
@@ -140,10 +142,10 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
                 {dish.familySecret && (
                   <div>
                     <p className="font-sans text-[9px] uppercase tracking-widest font-bold text-[#c4a484] mb-1">家庭秘方</p>
-                    <p className="font-handwriting text-base text-[#8a6a3a] leading-snug flex items-start gap-1">
+                    <div className="font-handwriting text-base text-[#8a6a3a] leading-snug flex items-start gap-1">
                       <Pencil size={12} className="mt-1 shrink-0 text-[#c4a484]" />
-                      {dish.familySecret}
-                    </p>
+                      <span>{dish.familySecret}</span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -151,10 +153,10 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
             {isPrint && dish.familySecret && (
               <div className="pt-1">
                 <p className="font-sans text-[8px] uppercase tracking-widest font-bold text-[#c4a484] mb-0.5">家庭秘方</p>
-                <p className="font-handwriting text-sm text-[#8a6a3a] leading-snug flex items-start gap-1">
+                <div className="font-handwriting text-sm text-[#8a6a3a] leading-snug flex items-start gap-1">
                   <Pencil size={10} className="mt-0.5 shrink-0 text-[#c4a484]" />
-                  {dish.familySecret}
-                </p>
+                  <span>{dish.familySecret}</span>
+                </div>
               </div>
             )}
           </div>
