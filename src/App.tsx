@@ -30,9 +30,11 @@ const RecipeCard: React.FC<RecipeCardProps & { onRemove?: (id: string) => void; 
   if (!dish || !dinner) return null;
 
   const typeColors = {
-    veggie: { bg: 'bg-emerald-50/20', badge: 'bg-emerald-50 text-emerald-700' },
-    meat: { bg: 'bg-rose-50/20', badge: 'bg-rose-50 text-rose-700' },
-    seafood: { bg: 'bg-blue-50/20', badge: 'bg-blue-50 text-blue-700' }
+    veggie:  { bg: 'bg-emerald-50/20', badge: 'bg-emerald-50 text-emerald-700' },
+    meat:    { bg: 'bg-rose-50/20',    badge: 'bg-rose-50 text-rose-700' },
+    seafood: { bg: 'bg-blue-50/20',    badge: 'bg-blue-50 text-blue-700' },
+    staple:  { bg: 'bg-amber-50/20',   badge: 'bg-amber-100 text-amber-800' },
+    dessert: { bg: 'bg-pink-50/20',    badge: 'bg-pink-50 text-pink-700' },
   };
 
   const colors = typeColors[dish.type];
@@ -393,7 +395,7 @@ Return ONLY a JSON object with these exact fields, no other text:
     try {
       const newDishes: Dish[] = parsed.map((item: any, i: number) => {
         if (!item.name && !item.englishName) throw new Error(`Item ${i + 1}: missing "name" or "englishName"`);
-        const validTypes = ['meat', 'veggie', 'seafood'];
+        const validTypes = ['meat', 'veggie', 'seafood', 'staple', 'dessert'];
         const type = item.type ?? item.category ?? 'veggie';
         return {
           id: `${Date.now()}-${i}`,
@@ -739,7 +741,7 @@ Return ONLY a JSON object with these exact fields, no other text:
                 <div className="space-y-2">
                   <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Dish Type</label>
                   <div className="flex gap-4">
-                    {['veggie', 'meat', 'seafood'].map(type => (
+                    {['veggie', 'meat', 'seafood', 'staple', 'dessert'].map(type => (
                       <button key={type} type="button" onClick={() => setNewDish(prev => ({ ...prev, type: type as any }))} className={`flex-1 py-3 rounded-xl border transition-all ${newDish.type === type ? 'bg-black text-white' : 'bg-white'}`}>{type}</button>
                     ))}
                   </div>
@@ -809,7 +811,7 @@ Return ONLY a JSON object with these exact fields, no other text:
                 <div className="space-y-2">
                   <label className="block font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">Dish Type</label>
                   <div className="flex gap-4">
-                    {['veggie', 'meat', 'seafood'].map(type => (
+                    {['veggie', 'meat', 'seafood', 'staple', 'dessert'].map(type => (
                       <button key={type} type="button" onClick={() => setNewDish(prev => ({ ...prev, type: type as any }))} className={`flex-1 py-3 rounded-xl border transition-all ${newDish.type === type ? 'bg-black text-white' : 'bg-white'}`}>{type}</button>
                     ))}
                   </div>

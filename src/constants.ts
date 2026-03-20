@@ -7,7 +7,7 @@ export interface Dish {
   ingredients: string[];
   story: string;
   culturalNote: string;
-  type: 'meat' | 'veggie' | 'seafood';
+  type: 'meat' | 'veggie' | 'seafood' | 'staple' | 'dessert';
   familySecret?: string;
 }
 
