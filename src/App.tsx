@@ -566,7 +566,20 @@ Return ONLY a JSON object with these exact fields, no other text:
                     </div>
                     <div className="w-1 h-1 rounded-full bg-gray-300" />
                     <button
-                      onClick={() => { setIsPrinting(true); setTimeout(() => { window.print(); setTimeout(() => setIsPrinting(false), 500); }, 50); }}
+                      onClick={() => {
+                        setIsPrinting(true);
+                        setTimeout(() => {
+                          const originalTitle = document.title;
+                          if (selectedDinner) {
+                            const date = selectedDinner.date.replace(/-/g, '');
+                            document.title = `+1 Chopsticks — ${selectedDinner.hostName} Tasting Card - ${date}`;
+                          }
+                          const restore = () => { document.title = originalTitle; };
+                          window.addEventListener('afterprint', restore, { once: true });
+                          window.print();
+                          setTimeout(() => { restore(); setIsPrinting(false); }, 1000);
+                        }, 50);
+                      }}
                       className="flex items-center gap-1.5 text-black hover:text-[#c4a484] transition-colors font-medium"
                     >
                       <Printer size={16} />
