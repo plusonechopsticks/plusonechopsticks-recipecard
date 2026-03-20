@@ -201,6 +201,9 @@ export default function App() {
   const [isEditDishModalOpen, setIsEditDishModalOpen] = useState(false);
   const [editingDishId, setEditingDishId] = useState<string | null>(null);
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
+  const [batchJson, setBatchJson] = useState('');
+  const [batchError, setBatchError] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleMagicGenerate = async () => {
@@ -363,6 +366,65 @@ Return ONLY a JSON object with these exact fields, no other text:
     setIsDishModalOpen(true);
   };
 
+  const BATCH_EXAMPLE = JSON.stringify([
+    {
+      name: "Sweet and Sour Pork Ribs",
+      chineseName: "糖醋小排",
+      pinyin: "táng cù xiǎo pái",
+      category: "meat",
+      ingredients: ["pork ribs", "rock sugar", "black vinegar", "soy sauce"],
+      story: "Succulent pork ribs in a rich, velvety caramelized glaze.",
+      culturalNote: "A hallmark of Shanghainese sweet-savory balance.",
+      imageUrl: ""
+    }
+  ], null, 2);
+
+  const handleBatchAdd = () => {
+    setBatchError('');
+    let parsed: any[];
+    try {
+      const raw = JSON.parse(batchJson);
+      if (!Array.isArray(raw)) throw new Error('Expected a JSON array [ ... ]');
+      parsed = raw;
+    } catch (e: any) {
+      setBatchError(e.message);
+      return;
+    }
+    try {
+      const newDishes: Dish[] = parsed.map((item: any, i: number) => {
+        if (!item.name && !item.englishName) throw new Error(`Item ${i + 1}: missing "name" or "englishName"`);
+        const validTypes = ['meat', 'veggie', 'seafood'];
+        const type = item.type ?? item.category ?? 'veggie';
+        return {
+          id: `${Date.now()}-${i}`,
+          englishName: item.englishName ?? item.name ?? '',
+          chineseName: item.chineseName ?? '',
+          pinyin: item.pinyin ?? '',
+          heroImage: item.imageUrl ?? item.heroImage ?? '',
+          ingredients: Array.isArray(item.ingredients) ? item.ingredients : [],
+          story: item.story ?? '',
+          culturalNote: item.culturalNote ?? '',
+          familySecret: item.familySecret ?? '',
+          type: validTypes.includes(type) ? type : 'veggie',
+        } as Dish;
+      });
+      setDishes(prev => [...newDishes, ...prev]);
+      setDinners(prev => prev.map(d =>
+        d.id === selectedDinnerId
+          ? { ...d, dishIds: [...d.dishIds, ...newDishes.map(dish => dish.id)] }
+          : d
+      ));
+      setIsBatchModalOpen(false);
+      setBatchJson('');
+    } catch (e: any) {
+      setBatchError(e.message);
+    }
+  };
+
+  const batchCount = (() => {
+    try { const p = JSON.parse(batchJson); return Array.isArray(p) ? p.length : 0; } catch { return 0; }
+  })();
+
 
   return (
     <div className="min-h-screen">
@@ -398,6 +460,13 @@ Return ONLY a JSON object with these exact fields, no other text:
               >
                 <Search size={16} />
                 <span>Library</span>
+              </button>
+              <button
+                onClick={() => { setBatchJson(BATCH_EXAMPLE); setBatchError(''); setIsBatchModalOpen(true); }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-all"
+              >
+                <Upload size={16} />
+                <span>Batch Add</span>
               </button>
               <button
                 onClick={openNewDishModal}
@@ -791,6 +860,66 @@ Return ONLY a JSON object with these exact fields, no other text:
                     </div>
                   </div>
                 ))}
+              </div>
+            </motion.div>
+          </div>
+        )}
+        {/* Batch Add Modal */}
+        {isBatchModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsBatchModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
+                <div>
+                  <h2 className="font-serif text-2xl">Batch Add Dishes</h2>
+                  <p className="font-sans text-xs text-gray-400 mt-0.5">Paste a JSON array of dishes to add them all at once</p>
+                </div>
+                <button onClick={() => setIsBatchModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full"><X size={20} /></button>
+              </div>
+              <div className="p-8 overflow-y-auto space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="font-sans text-[10px] uppercase tracking-widest font-bold text-gray-500">JSON Array</label>
+                  <div className="flex items-center gap-3">
+                    {batchCount > 0 && (
+                      <span className="font-sans text-xs text-[#c4a484] font-semibold">{batchCount} dish{batchCount !== 1 ? 'es' : ''} will be added</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const text = await navigator.clipboard.readText();
+                          setBatchJson(text);
+                          setBatchError('');
+                        } catch {
+                          setBatchError('Clipboard access denied — paste manually');
+                        }
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium hover:bg-gray-50 transition-all"
+                    >
+                      <Upload size={12} />
+                      Paste from clipboard
+                    </button>
+                  </div>
+                </div>
+                <textarea
+                  value={batchJson}
+                  onChange={e => { setBatchJson(e.target.value); setBatchError(''); }}
+                  rows={16}
+                  spellCheck={false}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none font-mono text-xs text-gray-800 bg-gray-50 focus:border-[#c4a484] transition-colors resize-none"
+                  placeholder="Paste JSON array here..."
+                />
+                {batchError && (
+                  <p className="font-sans text-xs text-rose-500 bg-rose-50 px-4 py-3 rounded-xl">{batchError}</p>
+                )}
+                <button
+                  type="button"
+                  onClick={handleBatchAdd}
+                  disabled={batchCount === 0}
+                  className="w-full py-4 bg-[#c4a484] text-white rounded-xl font-bold shadow-lg shadow-[#c4a484]/20 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                >
+                  Add {batchCount > 0 ? `${batchCount} ` : ''}Dish{batchCount !== 1 ? 'es' : ''}
+                </button>
               </div>
             </motion.div>
           </div>
